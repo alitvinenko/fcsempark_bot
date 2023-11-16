@@ -1,7 +1,6 @@
 package managers
 
 import (
-	"encoding/json"
 	"github.com/alitvinenko/fcsempark_bot/internal/polls/repository"
 	tele "gopkg.in/telebot.v3"
 	"log"
@@ -26,12 +25,9 @@ func (m *ClosePollManager) CheckAndClose(pollID string, rightVotedCount int) err
 		return err
 	}
 	if poll.ID == "" {
-		log.Printf("poll %s not found in db. skipped", pollID)
+		log.Printf("poll %s not found in database. skipped", pollID)
 		return nil
 	}
-
-	s, _ := json.Marshal(poll)
-	log.Println(string(s))
 
 	if rightVotedCount < poll.MaxPlayers {
 		return nil

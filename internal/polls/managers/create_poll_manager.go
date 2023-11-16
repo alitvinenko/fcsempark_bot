@@ -3,24 +3,24 @@ package managers
 import (
 	"errors"
 	"fmt"
+	"github.com/alitvinenko/fcsempark_bot/internal/config"
 	"github.com/alitvinenko/fcsempark_bot/internal/lib/e"
 	time2 "github.com/alitvinenko/fcsempark_bot/internal/lib/time"
 	"github.com/alitvinenko/fcsempark_bot/internal/polls/repository"
-	"github.com/alitvinenko/fcsempark_bot/internal/settings"
 	tele "gopkg.in/telebot.v3"
 	"log"
 	"time"
 )
 
 type CreatePollManager struct {
-	chatID          int
-	scheduleOptions []settings.GameSettings
-	bot             *tele.Bot
-	repository      *repository.PollRepository
+	chatID        int
+	scheduleItems []config.ScheduleItem
+	bot           *tele.Bot
+	repository    *repository.PollRepository
 }
 
-func NewCreatePollManager(chatID int, scheduleOptions []settings.GameSettings, bot *tele.Bot, repository *repository.PollRepository) *CreatePollManager {
-	return &CreatePollManager{chatID: chatID, scheduleOptions: scheduleOptions, bot: bot, repository: repository}
+func NewCreatePollManager(chatID int, scheduleItems []config.ScheduleItem, bot *tele.Bot, repository *repository.PollRepository) *CreatePollManager {
+	return &CreatePollManager{chatID: chatID, scheduleItems: scheduleItems, bot: bot, repository: repository}
 }
 
 var notFoundNextPollSettingsError = errors.New("next poll settings not found")
@@ -36,7 +36,7 @@ func (p *CreatePollManager) CreateAndPin() (err error) {
 		return notFoundNextPollSettingsError
 	}
 
-	nextGameDay := time2.StartOfDay(time2.NextWeekday(time.Now(), nextPollSettings.Weekday))
+	nextGameDay := time2.StartOfDay(time2.NextWeekday(time.Now(), nextPollSettings.Day))
 
 	existsNextGamePoll, err := p.repository.IsExists(nextGameDay)
 	if err != nil {
@@ -70,18 +70,18 @@ func (p *CreatePollManager) CreateAndPin() (err error) {
 		log.Println(err)
 	}
 
-	log.Println("new poll is created")
+	log.Println("new poll created")
 
 	return nil
 }
 
-func (p *CreatePollManager) getNextPollSettings() (*settings.GameSettings, error) {
+func (p *CreatePollManager) getNextPollSettings() (*config.ScheduleItem, error) {
 	now := int(time.Now().Weekday())
 	index := 0
 	minPeriod := 8
 
-	for i, v := range p.scheduleOptions {
-		vWeekDay := int(v.Weekday)
+	for i, v := range p.scheduleItems {
+		vWeekDay := int(v.Day)
 
 		var period int
 		if vWeekDay > now {
@@ -98,11 +98,11 @@ func (p *CreatePollManager) getNextPollSettings() (*settings.GameSettings, error
 		}
 	}
 
-	return &p.scheduleOptions[index], nil
+	return &p.scheduleItems[index], nil
 }
 
-func (p *CreatePollManager) buildPoll(pollSettings *settings.GameSettings) *tele.Poll {
-	question := p.buildPollQuestion(pollSettings)
+func (p *CreatePollManager) buildPoll(scheduleItem *config.ScheduleItem) *tele.Poll {
+	question := p.buildPollQuestion(scheduleItem)
 
 	return &tele.Poll{
 		Type:     "regular",
@@ -119,8 +119,8 @@ func (p *CreatePollManager) buildPoll(pollSettings *settings.GameSettings) *tele
 	}
 }
 
-func (p *CreatePollManager) buildPollQuestion(s *settings.GameSettings) string {
-	question := fmt.Sprintf("%s, %s (%s), %s", time2.ToRus(s.Weekday), s.StartTime, s.Duration, s.Place)
+func (p *CreatePollManager) buildPollQuestion(s *config.ScheduleItem) string {
+	question := fmt.Sprintf("%s, %s (%s), %s", time2.ToRus(s.Day), s.StartTime, s.Duration, s.Place)
 
 	return question
 }
