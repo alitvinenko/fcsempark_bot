@@ -1,14 +1,14 @@
-ENVS=-e DATABASE_PATH='/data/db.json' -e CHAT_ID -e TOKEN
+ENVS=-e DATABASE_PATH='/data/db.db' -e CHAT_ID -e TOKEN
 IMAGE_NAME="fcsempark_bot:latest"
 
 build:
 	docker build --rm -t ${IMAGE_NAME} .
 
 run-daemon:
-	docker run -d -v "/tmp/db.json:/data/db.json" ${ENVS} ${IMAGE_NAME} sh -c './main'
+	docker run -d --rm --name "fcsempark_bot_daemon" -v "/usr/local/_data:/data" ${ENVS} ${IMAGE_NAME} sh -c './main'
 
-run-createpoll:
-	docker run -v "/tmp/db.json:/data/db.json" ${ENVS} ${IMAGE_NAME} sh -c './createpoll'
+createpoll:
+	docker run --rm --name "fcsempark_bot_createpoll" -v "/usr/local/_data:/data" ${ENVS} ${IMAGE_NAME} sh -c './main createpoll'
 
-run-showdb:
-	docker run -v "/tmp/db.json:/data/db.json" ${ENVS} ${IMAGE_NAME} sh -c './showdb'
+showdb:
+	docker run --rm --name "fcsempark_bot_showdb" -v "/usr/local/_data:/data" ${ENVS} ${IMAGE_NAME} sh -c './main showdb'

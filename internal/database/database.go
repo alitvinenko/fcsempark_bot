@@ -1,23 +1,21 @@
 package database
 
 import (
-	"github.com/alitvinenko/fcsempark_bot/internal/polls/repository"
-	"github.com/boltdb/bolt"
+	"github.com/alitvinenko/fcsempark_bot/internal/repository/poll/model"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 	"log"
 )
 
-func InitDB(path string) *bolt.DB {
-	db, err := bolt.Open(path, 0600, nil)
+func Init(path string) *gorm.DB {
+	db, err := gorm.Open(sqlite.Open(path), &gorm.Config{})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("error on init DB: %v", err)
 	}
 
-	err = db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(repository.PollsBucket))
-		return err
-	})
+	err = db.AutoMigrate(&model.Poll{})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("error on automigrate: %v", err)
 	}
 
 	return db

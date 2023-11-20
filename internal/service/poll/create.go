@@ -1,34 +1,24 @@
-package managers
+package poll
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/alitvinenko/fcsempark_bot/internal/config"
 	"github.com/alitvinenko/fcsempark_bot/internal/lib/e"
 	time2 "github.com/alitvinenko/fcsempark_bot/internal/lib/time"
-	"github.com/alitvinenko/fcsempark_bot/internal/polls/repository"
+	"github.com/alitvinenko/fcsempark_bot/internal/model"
 	tele "gopkg.in/telebot.v3"
 	"log"
 	"time"
 )
 
-type CreatePollManager struct {
-	chatID        int
-	scheduleItems []config.ScheduleItem
-	bot           *tele.Bot
-	repository    *repository.PollRepository
-}
-
-func NewCreatePollManager(chatID int, scheduleItems []config.ScheduleItem, bot *tele.Bot, repository *repository.PollRepository) *CreatePollManager {
-	return &CreatePollManager{chatID: chatID, scheduleItems: scheduleItems, bot: bot, repository: repository}
-}
-
 var notFoundNextPollSettingsError = errors.New("next poll settings not found")
 
-func (p *CreatePollManager) CreateAndPin() (err error) {
+func (s *service) CreateAndPin(ctx context.Context) (err error) {
 	defer func() { err = e.WrapIfErr("error on create poll", err) }()
 
-	nextPollSettings, err := p.getNextPollSettings()
+	nextPollSettings, err := s.getNextPollSettings()
 	if err != nil {
 		return err
 	}
@@ -38,7 +28,7 @@ func (p *CreatePollManager) CreateAndPin() (err error) {
 
 	nextGameDay := time2.StartOfDay(time2.NextWeekday(time.Now(), nextPollSettings.Day))
 
-	existsNextGamePoll, err := p.repository.IsExists(nextGameDay)
+	existsNextGamePoll, err := s.isExistsNextGamePoll(ctx, nextGameDay)
 	if err != nil {
 		return err
 	}
@@ -48,24 +38,23 @@ func (p *CreatePollManager) CreateAndPin() (err error) {
 		return nil
 	}
 
-	message, err := p.bot.Send(&tele.Chat{ID: int64(p.chatID)}, p.buildPoll(nextPollSettings))
+	message, err := s.tgBot.Send(&tele.Chat{ID: int64(s.chatID)}, buildPoll(nextPollSettings))
 	if err != nil {
 		return err
 	}
 
-	dbPoll := repository.Poll{
-		ID:          message.Poll.ID,
-		TgMessageID: message.ID,
-		Day:         nextGameDay,
-		Status:      repository.PollStatusActive,
-		MaxPlayers:  nextPollSettings.MaxPlayers,
-	}
-	err = p.repository.Save(dbPoll)
+	err = s.pollRepository.Save(ctx, &model.Poll{
+		ID:                message.Poll.ID,
+		TelegramMessageID: message.ID,
+		Date:              nextGameDay,
+		Status:            model.PollStatusActive,
+		MaxPlayers:        nextPollSettings.MaxPlayers,
+	})
 	if err != nil {
 		log.Println(err)
 	}
 
-	err = p.bot.Pin(message)
+	err = s.tgBot.Pin(message)
 	if err != nil {
 		log.Println(err)
 	}
@@ -75,12 +64,12 @@ func (p *CreatePollManager) CreateAndPin() (err error) {
 	return nil
 }
 
-func (p *CreatePollManager) getNextPollSettings() (*config.ScheduleItem, error) {
+func (s *service) getNextPollSettings() (*config.ScheduleItem, error) {
 	now := int(time.Now().Weekday())
 	index := 0
 	minPeriod := 8
 
-	for i, v := range p.scheduleItems {
+	for i, v := range s.scheduleItems {
 		vWeekDay := int(v.Day)
 
 		var period int
@@ -98,11 +87,20 @@ func (p *CreatePollManager) getNextPollSettings() (*config.ScheduleItem, error) 
 		}
 	}
 
-	return &p.scheduleItems[index], nil
+	return &s.scheduleItems[index], nil
 }
 
-func (p *CreatePollManager) buildPoll(scheduleItem *config.ScheduleItem) *tele.Poll {
-	question := p.buildPollQuestion(scheduleItem)
+func (s *service) isExistsNextGamePoll(ctx context.Context, t time.Time) (bool, error) {
+	poll, err := s.pollRepository.GetByDate(ctx, t)
+	if err != nil {
+		return false, err
+	}
+
+	return poll != nil, nil
+}
+
+func buildPoll(scheduleItem *config.ScheduleItem) *tele.Poll {
+	question := buildPollQuestion(scheduleItem)
 
 	return &tele.Poll{
 		Type:     "regular",
@@ -119,7 +117,7 @@ func (p *CreatePollManager) buildPoll(scheduleItem *config.ScheduleItem) *tele.P
 	}
 }
 
-func (p *CreatePollManager) buildPollQuestion(s *config.ScheduleItem) string {
+func buildPollQuestion(s *config.ScheduleItem) string {
 	question := fmt.Sprintf("%s, %s (%s), %s", time2.ToRus(s.Day), s.StartTime, s.Duration, s.Place)
 
 	return question

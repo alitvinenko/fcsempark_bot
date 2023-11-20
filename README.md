@@ -21,17 +21,30 @@ docker build --rm -t <image_name>:<image_tag> .
 
 ### Run containers
 
-1. Daemon container
+1. Create directory for database file
 ```shell
-docker run -v "/path/to/db.json:/data/db.json" -e DATABASE_PATH='/data/db.json' -e CHAT_ID="_CHAT_ID_" -e TOKEN="_YOUR_BOT_TOKEN_" <image_name>:<image_tag> sh -c './main'
+sudo mkdir /usr/local/_data
 ```
 
-2. Run create new poll task
+2. Set env variables
 ```shell
-docker run -v "/path/to/db.json:/data/db.json" -e DATABASE_PATH='/data/db.json' -e CHAT_ID="_CHAT_ID_" -e TOKEN="_YOUR_BOT_TOKEN_" <image_name>:<image_tag> sh -c './main createpoll'
+export TOKEN=<your bot token>
+export CHAT_ID=<chat id>
 ```
 
-3. Advanced. Show all saved items into Database
+3. Build image
 ```shell
-docker run -v "/path/to/db.json:/data/db.json" -e DATABASE_PATH='/data/db.json' -e CHAT_ID="_CHAT_ID_" -e TOKEN="_YOUR_BOT_TOKEN_" <image_name>:<image_tag> sh -c './main showdb'
+make build
+```
+
+4. Run bot daemon
+```shell
+make run-daemon
+```
+
+5. Add to crontab schedule when we want to create polls
+```shell
+# /etc/crontab
+
+0 8 * * sun,thu 
 ```

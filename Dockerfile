@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine
+FROM golang:1.21
 
 WORKDIR /app
 
@@ -7,4 +7,4 @@ RUN go mod download
 
 COPY . ./
 
-RUN CGO_ENABLED=0 GOOS=linux go build cmd/main.go
+RUN CGO_ENABLED=1 GOOS=linux go build cmd/main.go

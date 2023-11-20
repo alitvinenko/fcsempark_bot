@@ -1,16 +1,17 @@
 package handlers
 
 import (
-	"github.com/alitvinenko/fcsempark_bot/internal/polls/managers"
+	"context"
+	"github.com/alitvinenko/fcsempark_bot/internal/service"
 	tele "gopkg.in/telebot.v3"
 )
 
 type PollHandler struct {
-	m *managers.ClosePollManager
+	service service.PollService
 }
 
-func NewPollHandler(m *managers.ClosePollManager) *PollHandler {
-	return &PollHandler{m: m}
+func NewPollHandler(service service.PollService) *PollHandler {
+	return &PollHandler{service: service}
 }
 
 func (h *PollHandler) Handle(c tele.Context) error {
@@ -18,5 +19,5 @@ func (h *PollHandler) Handle(c tele.Context) error {
 		return nil
 	}
 
-	return h.m.CheckAndClose(c.Poll().ID, c.Poll().Options[0].VoterCount)
+	return h.service.CheckAndClose(context.Background(), c.Poll().ID, c.Poll().Options[0].VoterCount)
 }

@@ -2,6 +2,7 @@ package commands
 
 import (
 	tele "gopkg.in/telebot.v3"
+	"log"
 )
 
 func HelpHandler(c tele.Context) error {
@@ -16,6 +17,8 @@ func HelpHandler(c tele.Context) error {
 ℹ️ /help - ты сейчас здесь.
 
 Еще я автоматически создаю голосования на будущие игры и закрываю эти голосования когда набирается необходимое число игроков.`
+
+	log.Printf("%+v", c.Message().Chat.ID)
 
 	return c.Send(message, &tele.SendOptions{ParseMode: tele.ModeMarkdown})
 }

@@ -1,10 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/alitvinenko/fcsempark_bot/internal/app/create_poll"
-	"github.com/alitvinenko/fcsempark_bot/internal/app/daemon"
-	"github.com/alitvinenko/fcsempark_bot/internal/app/showdb"
+	"github.com/alitvinenko/fcsempark_bot/internal/app"
+	"log"
 	"os"
 )
 
@@ -27,15 +27,23 @@ func main() {
 		os.Exit(1)
 	}
 
+	ctx := context.Background()
+	var application app.App
+
 	switch command {
 	case CommandDaemon:
-		daemon.Run()
+		application = app.NewDaemon(ctx)
 	case CommandCreatePoll:
-		create_poll.Run()
+		application = app.NewCreatePollApp(ctx)
 	case CommandShowDB:
-		showdb.Run()
+		application = app.NewListPolls(ctx)
 	default:
 		fmt.Printf("Invalid command. Use [%s|%s|%s]\n", CommandDaemon, CommandCreatePoll, CommandShowDB)
 		os.Exit(1)
+	}
+
+	err := application.Run(ctx)
+	if err != nil {
+		log.Fatalf("error on run application: %v", err)
 	}
 }
