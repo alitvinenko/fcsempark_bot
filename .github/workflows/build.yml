@@ -11,6 +11,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  CONTAINER_NAME: fcsempark_bot_daemon
 
 jobs:
   build:
@@ -57,7 +58,7 @@ jobs:
           ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
       - name: Deploy to Production
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git pull && CONTAINER_NAME=${{ env.IMAGE_NAME }} DOCKER_REGISTRY=${{ env.REGISTRY }} ./deploy.sh"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git pull && IMAGE_NAME=${{ env.IMAGE_NAME }} DOCKER_REGISTRY=${{ env.REGISTRY }} CONTAINER_NAME=${{ env.CONTAINER_NAME }} ./deploy.sh"
         env:
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
