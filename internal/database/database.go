@@ -10,7 +10,7 @@ import (
 func Init(path string) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(path), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("error on init DB: %v", err)
+		log.Fatalf("error on init DB. Path: %s. Error: %v", path, err)
 	}
 
 	err = db.AutoMigrate(&model.Poll{})

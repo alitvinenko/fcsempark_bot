@@ -29,4 +29,4 @@ docker pull $DOCKER_IMAGE
 
 echo "Run container and daemon"
 # Запуск нового контейнера с переменными окружения из файла .env
-docker run -d --name $CONTAINER_NAME -p 8080:8080 --env-file .env $DOCKER_IMAGE ./main
+docker run -d --rm --name $CONTAINER_NAME -v "/usr/local/_data:/data" --env-file .env $DOCKER_IMAGE ./main
