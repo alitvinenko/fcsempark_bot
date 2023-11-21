@@ -57,7 +57,6 @@ jobs:
           ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
       - name: Deploy to Production
         run: |
-#          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "echo ${ env.IMAGE_NAME } && echo ${{ env.REGISTRY }} && cd ${{ secrets.WORK_DIR }} && git pull && CONTAINER_NAME=${ env.IMAGE_NAME } DOCKER_REGISTRY=${{ env.REGISTRY }} ./deploy.sh"
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && ls -la"
         env:
           SSH_USER: ${{ secrets.SSH_USER }}
