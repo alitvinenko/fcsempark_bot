@@ -14,12 +14,19 @@ CONTAINER_NAME=${CONTAINER_NAME:-fcsempark_bot_daemon}
 DOCKER_REGISTRY=${DOCKER_REGISTRY:-your-docker-registry}
 DOCKER_IMAGE=${DOCKER_REGISTRY}/${CONTAINER_NAME}:main
 
+echo `CONTAINER_NAME=${CONTAINER_NAME}`
+echo `DOCKER_REGISTRY=${DOCKER_REGISTRY}`
+echo `DOCKER_IMAGE=${DOCKER_IMAGE}`
+
+echo "Stop running container"
 # Остановка и удаление текущего контейнера
 docker stop $CONTAINER_NAME || true
 docker rm $CONTAINER_NAME || true
 
+echo "Pull image"
 # Загрузка обновленного образа
 docker pull $DOCKER_IMAGE
 
+echo "Run container and daemon"
 # Запуск нового контейнера с переменными окружения из файла .env
 docker run -d --name $CONTAINER_NAME -p 8080:8080 --env-file .env $DOCKER_IMAGE ./main
