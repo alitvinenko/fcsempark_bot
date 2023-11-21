@@ -46,13 +46,13 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-#  deploy:
-#    runs-on: ubuntu-latest
-#    needs: build
-#    steps:
-#      - name: Deploy to Production
-#        run: |
-#          ssh alitvinenko@91.107.121.224 "cd /path/to/app && git pull && CONTAINER_NAME=myapp DOCKER_REGISTRY=${{ secrets.DOCKER_REGISTRY }} ./deploy.sh"
-#        env:
-#          SERVER_USER: ${{ secrets.SERVER_USER }}
-#          SERVER_IP: ${{ secrets.SERVER_IP }}
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to Production
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd /path/to/app && git pull && CONTAINER_NAME=${ env.IMAGE_NAME } DOCKER_REGISTRY=${{ env.REGISTRY }} ./deploy.sh"
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}

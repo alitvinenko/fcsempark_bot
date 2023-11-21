@@ -12,7 +12,7 @@ source .env
 # Параметры
 CONTAINER_NAME=${CONTAINER_NAME:-fcsempark_bot_daemon}
 DOCKER_REGISTRY=${DOCKER_REGISTRY:-your-docker-registry}
-DOCKER_IMAGE=${DOCKER_REGISTRY}/${CONTAINER_NAME}:latest
+DOCKER_IMAGE=${DOCKER_REGISTRY}/${CONTAINER_NAME}:main
 
 # Остановка и удаление текущего контейнера
 docker stop $CONTAINER_NAME || true
