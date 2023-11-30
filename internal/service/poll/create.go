@@ -54,7 +54,9 @@ func (s *service) CreateAndPin(ctx context.Context) (err error) {
 		log.Println(err)
 	}
 
-	err = s.tgBot.Pin(message)
+	err = s.tgBot.Pin(message, &tele.SendOptions{
+		DisableNotification: false,
+	})
 	if err != nil {
 		log.Println(err)
 	}
