@@ -1,9 +1,9 @@
 schedule:
   - day: 0
-    start_time: "20:30"
-    duration: "1,5 часа"
-    place: "КС, зал"
-    max_players: 15
+    start_time: "20:00"
+    duration: "2 часа"
+    place: "КС, улица"
+    max_players: 18
   - day: 3
     start_time: "20:30"
     duration: "1,5 часа"
